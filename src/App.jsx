@@ -34,6 +34,7 @@ function parse(text) {
       outcomes.push({ name, prob: parseFloat(pm[1]), color });
     }
   }
+  outcomes.forEach((o, i) => { if (o.color === "neutral") o.color = i === 0 ? "blue" : i === 1 ? "red" : "neutral"; });
   return { map, outcomes };
 }
 
@@ -602,77 +603,171 @@ async function fetchBook(tokenId) {
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 html,body{ margin:0; background:#000; }
-.pk{ --ink:#000000; --panel:#0A0A0A; --panel2:#111111; --line:#252525; --line2:#333333; --text:#EDEDED; --muted:#8F8F8F;
-  --accent:#3291FF; --pos:#3FE07C; --neg:#5B5B5B; --warn:#F5A623;
-  min-height:100vh; background:var(--ink);
-  color:var(--text); font-family:'Geist',system-ui,sans-serif; padding:20px 26px 40px; box-sizing:border-box; }
-.pk-wrap{ max-width:1500px; margin:0 auto; }
-.pk-eyebrow{ font-size:10px; letter-spacing:.28em; color:var(--muted); text-transform:uppercase; margin:0 0 4px; }
-.pk-title{ font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0 0 12px; }
-.pk-ta{ width:100%; box-sizing:border-box; background:var(--panel); color:var(--text); border:1px solid var(--line);
-  border-radius:8px; padding:9px 11px; font-family:'Geist Mono',monospace; font-size:12px; line-height:1.5; resize:vertical; min-height:58px; }
-.pk-ta:focus{ outline:none; border-color:var(--line2); }
-.pk-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0; }
-.pk-label{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
-.pk-input{ background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:7px;
-  padding:7px 10px; font-family:'Geist Mono',monospace; font-size:12.5px; box-sizing:border-box; }
-.pk-input:focus{ outline:none; border-color:var(--line2); }
-.pk-btn{ background:#0A0A0A; color:var(--text); border:1px solid var(--line2); border-radius:7px; padding:7px 12px;
-  cursor:pointer; font-family:'Geist',sans-serif; font-weight:500; font-size:12px; transition:background .15s, border-color .15s, opacity .15s; }
-.pk-btn:hover{ background:#191919; border-color:#454545; }
-.pk-btn.ghost{ background:transparent; border-color:var(--line); }
-.pk-btn.primary{ background:#EDEDED; border-color:#EDEDED; color:#000; font-weight:600; }
-.pk-btn.primary:hover{ background:#fff; border-color:#fff; }
+*{ box-sizing:border-box; }
+.pk{ --bg:#000; --s1:#0a0a0a; --s2:#111111; --s3:#171717; --line:#1f1f1f; --line2:#2e2e2e;
+  --text:#ededed; --muted:#8f8f8f; --dim:#5c5c5c; --pos:#3fe07c; --posbg:rgba(63,224,124,.08);
+  --neg:#6b6b6b; --warn:#f5a623; --blue:#3291ff; --red:#ff6166;
+  min-height:100vh; background:var(--bg); color:var(--text);
+  font-family:'Geist',system-ui,sans-serif; font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; font-feature-settings:"tnum" 1; }
+.mono{ font-family:'Geist Mono',monospace; }
+
+/* nav */
+.pk-nav{ position:sticky; top:0; z-index:5; background:rgba(0,0,0,.8); backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line); }
+.pk-navin{ max-width:1360px; margin:0 auto; padding:14px 32px; display:flex; align-items:center; gap:14px; }
+.pk-logo{ display:flex; align-items:center; gap:10px; font-weight:600; font-size:16px; letter-spacing:-.01em; }
+.pk-logo svg{ width:26px; height:26px; }
+.pk-navsep{ color:var(--line2); }
+.pk-navsub{ color:var(--muted); font-size:14px; }
+.pk-navright{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+.pk-live{ display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);
+  border:1px solid var(--line2); border-radius:999px; padding:5px 12px; }
+.pk-dot{ width:7px; height:7px; border-radius:50%; background:var(--dim); }
+.pk-dot.on{ background:var(--pos); box-shadow:0 0 0 3px rgba(63,224,124,.18); animation:pkp 1.8s ease-in-out infinite; }
+@keyframes pkp{ 50%{ opacity:.45; } }
+@media (prefers-reduced-motion: reduce){ .pk-dot.on{ animation:none; } }
+
+.pk-main{ max-width:1360px; margin:0 auto; padding:32px; display:flex; flex-direction:column; gap:20px; }
+
+/* cards */
+.pk-card{ background:var(--s1); border:1px solid var(--line); border-radius:14px; }
+.pk-cardpad{ padding:22px; }
+.pk-cardtitle{ font-size:13px; font-weight:500; color:var(--muted); margin:0 0 12px; }
+
+.pk-top{ display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:20px; }
+
+/* inputs */
+.pk-ta{ width:100%; background:var(--bg); color:var(--text); border:1px solid var(--line2); border-radius:10px;
+  padding:14px 16px; font-family:'Geist Mono',monospace; font-size:13.5px; line-height:1.65; resize:vertical; min-height:150px;
+  transition:border-color .15s, box-shadow .15s; }
+.pk-ta:focus, .pk-input:focus{ outline:none; border-color:#555; box-shadow:0 0 0 3px rgba(255,255,255,.06); }
+.pk-input{ background:var(--bg); color:var(--text); border:1px solid var(--line2); border-radius:9px;
+  height:42px; padding:0 14px; font-family:'Geist Mono',monospace; font-size:14px; transition:border-color .15s, box-shadow .15s; }
+.pk-prefix{ position:relative; display:flex; align-items:center; }
+.pk-prefix span{ position:absolute; left:14px; color:var(--muted); font-family:'Geist Mono',monospace; font-size:14px; pointer-events:none; }
+.pk-prefix .pk-input{ padding-left:28px; width:100%; }
+.pk-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.pk-label{ font-size:13px; color:var(--muted); font-weight:500; }
+
+/* buttons */
+.pk-btn{ height:42px; padding:0 18px; border-radius:9px; border:1px solid var(--line2); background:var(--s2); color:var(--text);
+  font-family:'Geist',sans-serif; font-size:14px; font-weight:500; cursor:pointer; white-space:nowrap;
+  transition:background .15s, border-color .15s, opacity .15s, transform .05s; }
+.pk-btn:hover{ background:var(--s3); border-color:#444; }
+.pk-btn:active{ transform:translateY(1px); }
 .pk-btn:disabled{ opacity:.45; cursor:default; }
-.pk-btn.stop{ background:transparent; color:var(--warn); border-color:#4a3a15; }
-.pk-slider{ flex:1; min-width:130px; accent-color:var(--text); }
-.pk-status{ font-family:'Geist Mono',monospace; font-size:11px; color:var(--muted); }
-.pk-err{ color:var(--warn); font-family:'Geist Mono',monospace; font-size:11px; margin:6px 0; }
+.pk-btn.primary{ background:#ededed; border-color:#ededed; color:#000; font-weight:600; }
+.pk-btn.primary:hover{ background:#fff; border-color:#fff; }
+.pk-btn.sm{ height:32px; padding:0 12px; font-size:13px; }
+.pk-btn.warn{ color:var(--warn); border-color:#4a3a15; background:transparent; }
 
-.pk-matchbar{ display:flex; align-items:center; gap:9px; font-weight:600; font-size:13px; letter-spacing:-.01em; margin:14px 0 8px; }
-.pk-matchbar .mut{ color:var(--muted); font-weight:400; }
+/* settings */
+.pk-setgrid{ display:flex; flex-direction:column; gap:18px; }
+.pk-seg{ display:grid; grid-template-columns:repeat(4,1fr); background:var(--bg); border:1px solid var(--line2); border-radius:9px; padding:3px; gap:3px; }
+.pk-seg button{ height:34px; border:0; border-radius:6px; background:transparent; color:var(--muted); font-family:'Geist',sans-serif;
+  font-size:13px; font-weight:500; cursor:pointer; transition:background .15s,color .15s; }
+.pk-seg button:hover{ color:var(--text); }
+.pk-seg button.on{ background:var(--s3); color:var(--text); box-shadow:0 0 0 1px var(--line2) inset; }
+.pk-kellyval{ display:flex; align-items:baseline; justify-content:space-between; }
+.pk-kellyval b{ font-family:'Geist Mono',monospace; font-size:22px; font-weight:600; letter-spacing:-.02em; }
+.pk-slider{ width:100%; accent-color:#ededed; margin:0; }
 
-.pk-mapcard{ border:1px solid var(--line); border-radius:10px; background:var(--panel); overflow:hidden; }
-.pk-maphdr{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line);
-  background:var(--panel2); }
-.pk-mappill{ font-family:'Geist Mono',monospace; font-size:10px; letter-spacing:.08em; padding:2px 8px; border:1px solid var(--line2); color:var(--muted); border-radius:5px; white-space:nowrap; }
-.pk-qlink{ color:var(--muted); font-size:11.5px; text-decoration:none; text-align:right; }
+.pk-msg{ border-radius:10px; padding:12px 16px; font-size:14px; border:1px solid; }
+.pk-msg.err{ color:var(--warn); border-color:#3d3117; background:rgba(245,166,35,.06); }
+.pk-msg.info{ color:var(--muted); border-color:var(--line2); background:var(--s1); }
+
+/* match header */
+.pk-match{ padding:24px; display:flex; flex-direction:column; gap:18px; }
+.pk-matchtop{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.pk-badge{ font-family:'Geist Mono',monospace; font-size:12px; font-weight:500; letter-spacing:.06em; color:var(--text);
+  border:1px solid var(--line2); background:var(--s2); border-radius:6px; padding:4px 10px; }
+.pk-qlink{ color:var(--muted); font-size:13.5px; text-decoration:none; transition:color .15s; }
 .pk-qlink:hover{ color:var(--text); }
+.pk-teams{ display:grid; grid-template-columns:1fr auto 1fr; align-items:end; gap:16px; }
+.pk-team .n{ font-size:26px; font-weight:600; letter-spacing:-.025em; line-height:1.15; }
+.pk-team .p{ font-family:'Geist Mono',monospace; font-size:14px; color:var(--muted); margin-top:4px; }
+.pk-team.r{ text-align:right; }
+.pk-vs{ color:var(--dim); font-size:14px; font-weight:500; padding-bottom:22px; }
+.pk-bar{ display:flex; height:6px; border-radius:999px; overflow:hidden; background:var(--s3); gap:2px; }
+.pk-bar i{ display:block; height:100%; transition:width .4s ease; }
 
-.pk-sides{ display:grid; grid-template-columns:1fr 1fr; }
-.pk-side{ padding:12px 13px; }
-.pk-side + .pk-side{ border-left:1px solid var(--line); }
-.pk-sidehdr{ display:flex; align-items:baseline; gap:8px; margin-bottom:9px; }
-.pk-sidename{ font-size:14px; font-weight:600; letter-spacing:-.01em; }
-.pk-sidemodel{ font-family:'Geist Mono',monospace; font-size:11px; color:var(--muted); }
+/* sides */
+.pk-sides{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.pk-side{ padding:22px; display:flex; flex-direction:column; gap:16px; }
+.pk-sidehdr{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.pk-sidename{ display:flex; align-items:center; gap:10px; font-size:18px; font-weight:600; letter-spacing:-.015em; }
+.pk-sidename i{ width:10px; height:10px; border-radius:3px; }
+.pk-pill{ font-family:'Geist Mono',monospace; font-size:12px; font-weight:500; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+.pk-pill.pos{ color:var(--pos); background:var(--posbg); box-shadow:0 0 0 1px rgba(63,224,124,.25) inset; }
+.pk-pill.neu{ color:var(--muted); background:var(--s2); box-shadow:0 0 0 1px var(--line2) inset; }
 
-.pk-book{ border:1px solid var(--line); border-radius:7px; overflow:hidden; margin-bottom:9px; }
-.pk-booktag{ padding:6px 10px; background:var(--panel2); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-.pk-booktag b{ letter-spacing:0; }
-.pk-booktag .mut{ color:var(--muted); font-weight:400; margin-left:5px; }
+.pk-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.pk-stat{ background:var(--s1); padding:12px 14px; }
+.pk-stat .k{ font-size:12px; color:var(--muted); }
+.pk-stat .v{ font-family:'Geist Mono',monospace; font-size:17px; font-weight:600; margin-top:2px; letter-spacing:-.01em; }
+
+.pk-book{ border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.pk-booktag{ display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--s2); border-bottom:1px solid var(--line); font-size:13px; }
+.pk-booktag b{ font-weight:600; letter-spacing:.04em; font-size:12px; }
+.pk-booktag .mut{ color:var(--muted); }
 table.pk-tbl{ width:100%; border-collapse:collapse; font-family:'Geist Mono',monospace; }
-.pk-tbl th{ font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:400;
-  text-align:right; padding:5px 10px; border-top:1px solid var(--line); }
-.pk-tbl th:first-child{ text-align:left; }
-.pk-tbl td{ font-size:12px; text-align:right; padding:5px 10px; }
-.pk-tbl td:first-child{ text-align:left; font-weight:500; }
-.pk-tbl tr.dim td{ color:var(--muted); }
+.pk-tbl th{ font-family:'Geist',sans-serif; font-size:12px; color:var(--muted); font-weight:500; text-align:right; padding:9px 14px; border-bottom:1px solid var(--line); }
+.pk-tbl th:first-child, .pk-tbl td:first-child{ text-align:left; }
+.pk-tbl td{ font-size:14px; text-align:right; padding:11px 14px; border-bottom:1px solid var(--line); }
+.pk-tbl tr:last-child td{ border-bottom:0; }
+.pk-tbl tbody tr{ transition:background .12s; }
+.pk-tbl tbody tr:hover{ background:var(--s2); }
+.pk-tbl tr.bet td:first-child{ box-shadow:inset 2px 0 0 var(--pos); font-weight:600; }
+.pk-tbl tr.bet{ background:linear-gradient(90deg, rgba(63,224,124,.05), transparent 60%); }
+.pk-tbl tr.dim td{ color:var(--dim); }
 .pk-pos{ color:var(--pos); }
 .pk-neg{ color:var(--neg); }
 
-.pk-hedge{ margin-top:10px; border:1px solid var(--line); border-radius:10px; background:var(--panel); overflow:hidden; }
-.pk-hedgehdr{ display:flex; align-items:center; justify-content:space-between; padding:9px 12px; cursor:pointer; }
-.pk-hedgehdr h3{ margin:0; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-.pk-hedgebody{ padding:0 12px 13px; }
-.pk-hgrid{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:11px; }
-.pk-lockrow{ display:flex; gap:20px; flex-wrap:wrap; padding-top:11px; border-top:1px solid var(--line); }
-.pk-lockrow .k{ font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
-.pk-lockrow .v{ font-family:'Geist Mono',monospace; font-size:17px; font-weight:600; margin-top:3px; }
+.pk-skel{ height:14px; border-radius:6px; background:linear-gradient(90deg,var(--s2),var(--s3),var(--s2)); background-size:200% 100%; animation:pks 1.4s linear infinite; }
+@keyframes pks{ to{ background-position:-200% 0; } }
+.pk-empty{ color:var(--muted); font-size:14px; padding:28px 0; text-align:center; border:1px dashed var(--line2); border-radius:10px; }
 
-.pk-foot{ color:var(--muted); font-size:10.5px; line-height:1.6; margin-top:14px; }
-.pk-foot code{ font-family:'Geist Mono',monospace; color:#c4c4c4; }
-@media (max-width:640px){ .pk-sides{ grid-template-columns:1fr; } .pk-side + .pk-side{ border-left:none; border-top:1px solid var(--line);} }
+/* tools */
+.pk-tools{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+.pk-toolhdr{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px; cursor:pointer; user-select:none; }
+.pk-toolhdr h3{ margin:0; font-size:16px; font-weight:600; letter-spacing:-.01em; }
+.pk-toolhdr p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+.pk-chev{ width:18px; height:18px; color:var(--muted); transition:transform .2s; }
+.pk-chev.open{ transform:rotate(180deg); }
+.pk-toolbody{ padding:0 22px 22px; display:flex; flex-direction:column; gap:16px; }
+.pk-fields{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; }
+.pk-field{ display:flex; flex-direction:column; gap:6px; }
+.pk-field .pk-input{ width:100%; }
+.pk-out{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.pk-out > div{ background:var(--s1); padding:12px 14px; }
+.pk-out .k{ font-size:12px; color:var(--muted); }
+.pk-out .v{ font-family:'Geist Mono',monospace; font-size:18px; font-weight:600; margin-top:2px; }
+.pk-note{ font-size:13px; color:var(--muted); margin:0; line-height:1.6; }
+.pk-note code{ font-family:'Geist Mono',monospace; color:#c4c4c4; background:var(--s2); padding:1px 6px; border-radius:5px; font-size:12.5px; }
+
+.pk-foot{ color:var(--dim); font-size:13px; text-align:center; padding:8px 0 4px; }
+
+@media (max-width:980px){
+  .pk-top, .pk-sides, .pk-tools{ grid-template-columns:1fr; }
+}
+@media (max-width:640px){
+  .pk-main{ padding:16px; gap:16px; } .pk-navin{ padding:12px 16px; } .pk-navsub, .pk-navsep{ display:none; }
+  .pk-team .n{ font-size:20px; } .pk-tbl td, .pk-tbl th{ padding-left:10px; padding-right:10px; }
+}
 `;
+
+const Chevron = ({ open }) => (
+  <svg className={"pk-chev" + (open ? " open" : "")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+);
+const Logo = () => (
+  <svg viewBox="0 0 64 64" aria-hidden="true">
+    <rect width="64" height="64" rx="14" fill="#111" stroke="#2e2e2e" strokeWidth="2" />
+    <rect x="14" y="36" width="9" height="14" rx="2" fill="#5c5c5c" />
+    <rect x="27.5" y="26" width="9" height="24" rx="2" fill="#a1a1a1" />
+    <rect x="41" y="14" width="9" height="36" rx="2" fill="#ededed" />
+  </svg>
+);
 
 // ---------- ladder table ----------
 function Ladder({ tag, hint, rows, accent }) {
@@ -681,16 +776,14 @@ function Ladder({ tag, hint, rows, accent }) {
       <div className="pk-booktag"><b style={{ color: accent }}>{tag}</b><span className="mut">{hint}</span></div>
       <table className="pk-tbl">
         <thead>
-          <tr>
-            <th>{tag === "ASK" ? "Price" : "Bid"}</th><th>Avail.</th><th>Edge</th><th>Shares</th><th>Cost</th>
-          </tr>
+          <tr><th>{tag === "ASK" ? "Price" : "Bid"}</th><th>Avail.</th><th>Edge</th><th>Shares</th><th>Cost</th></tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr className="dim"><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
           )}
           {rows.map((r, i) => (
-            <tr key={i} className={r.bet ? "" : "dim"}>
+            <tr key={i} className={r.bet ? "bet" : "dim"}>
               <td>{cents(r.price)}</td>
               <td>{ints(r.avail)}</td>
               <td className={r.bet ? "pk-pos" : "pk-neg"}>{(r.edgePP >= 0 ? "+" : "") + r.edgePP.toFixed(2)}%</td>
@@ -705,85 +798,82 @@ function Ladder({ tag, hint, rows, accent }) {
 }
 
 // ---------- one team column ----------
-function Side({ o, book, bankroll, mult }) {
+function Side({ o, book, bankroll, mult, loaded }) {
   const accent = accentFor(o.color);
   const askLv = levels(book && book.asks, "ask", 2);
   const bidLv = levels(book && book.bids, "bid", 3);
+  const build = (lv) => lv.map((x) => ({ price: x.price, avail: x.size, ...levelCalc(x.price, o.prob, bankroll, mult) }));
+  const asks = build(askLv), bids = build(bidLv);
 
-  const build = (lv) =>
-    lv.map((x) => {
-      const calc = levelCalc(x.price, o.prob, bankroll, mult);
-      return { price: x.price, avail: x.size, ...calc };
-    });
+  const bestAsk = asks[0];
+  const top = [...asks, ...bids].filter((r) => r.bet).sort((x, y) => y.edgePP - x.edgePP)[0];
+  const fair = o.prob;
 
   return (
-    <div className="pk-side">
+    <div className="pk-card pk-side">
       <div className="pk-sidehdr">
-        <span className="pk-sidename" style={{ color: accent }}>{o.name}</span>
-        <span className="pk-sidemodel">model {o.prob.toFixed(2)}%</span>
+        <div className="pk-sidename"><i style={{ background: accent }} />{o.name}</div>
+        {book
+          ? (top ? <span className="pk-pill pos">+{top.edgePP.toFixed(1)}% edge</span> : <span className="pk-pill neu">No +EV</span>)
+          : null}
       </div>
-      {!book && <div className="pk-status">waiting for order book…</div>}
-      {book && <Ladder tag="ASK" hint="buy" rows={build(askLv)} accent={accent} />}
-      {book && <Ladder tag="BID" hint="limit buy YES" rows={build(bidLv)} accent={accent} />}
+
+      <div className="pk-stats">
+        <div className="pk-stat"><div className="k">Model</div><div className="v">{o.prob.toFixed(2)}%</div></div>
+        <div className="pk-stat"><div className="k">Best ask</div><div className="v">{bestAsk ? cents(bestAsk.price) : "—"}</div></div>
+        <div className="pk-stat"><div className="k">Max +EV price</div><div className="v">{fair.toFixed(1)}¢</div></div>
+      </div>
+
+      {!book && (loaded
+        ? <div style={{ display: "flex", flexDirection: "column", gap: 10 }}><div className="pk-skel" /><div className="pk-skel" style={{ width: "70%" }} /><div className="pk-skel" style={{ width: "85%" }} /></div>
+        : <div className="pk-empty">Find the match to load the live order book</div>)}
+      {book && <Ladder tag="ASK" hint="buy now" rows={asks} accent={accent} />}
+      {book && <Ladder tag="BID" hint="limit buy below market" rows={bids} accent={accent} />}
     </div>
   );
 }
 
-// ---------- hedge calculator ----------
 // Standalone Kelly calculator: punch in your model probability and a Polymarket
 // price (the share price IS the odds — c¢ means c% implied), get the bet size.
 function KellyCalc({ bankroll, mult }) {
-  const [open, setOpen] = useState(false);
-  const [prob, setProb] = useState("");   // your win probability %
-  const [price, setPrice] = useState(""); // Polymarket price ¢ (= implied prob)
+  const [open, setOpen] = useState(true);
+  const [prob, setProb] = useState("");
+  const [price, setPrice] = useState("");
 
   const p = toNum(prob), c = toNum(price);
   const has = isFinite(p) && p > 0 && p <= 100 && isFinite(c) && c > 0 && c < 100;
   const r = has ? levelCalc(c, p, bankroll, mult) : null;
-  const ev = has ? (p - c) / c : 0;          // return on stake per bet
-  const decOdds = has ? 100 / c : 0;         // decimal odds the price implies
+  const ev = has ? (p - c) / c : 0;
+  const decOdds = has ? 100 / c : 0;
 
   return (
-    <div className="pk-hedge">
-      <div className="pk-hedgehdr" onClick={() => setOpen(!open)}>
-        <h3>Kelly Calculator</h3>
-        <span style={{ color: "var(--muted)" }}>{open ? "▲" : "▼"}</span>
+    <div className="pk-card">
+      <div className="pk-toolhdr" onClick={() => setOpen(!open)}>
+        <div><h3>Kelly calculator</h3><p>Your probability vs a Polymarket price</p></div>
+        <Chevron open={open} />
       </div>
       {open && (
-        <div className="pk-hedgebody">
-          <div className="pk-hgrid">
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span className="pk-label">Win probability (%)</span>
-              <input className="pk-input" style={{ width: 120 }} value={prob} placeholder="e.g. 78" onChange={(e) => setProb(e.target.value)} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span className="pk-label">Polymarket price (¢)</span>
-              <input className="pk-input" style={{ width: 120 }} value={price} placeholder="e.g. 60"
-                onChange={(e) => setPrice(e.target.value)} />
-            </div>
+        <div className="pk-toolbody">
+          <div className="pk-fields">
+            <label className="pk-field"><span className="pk-label">Win probability (%)</span>
+              <input className="pk-input" inputMode="decimal" value={prob} placeholder="78" onChange={(e) => setProb(e.target.value)} /></label>
+            <label className="pk-field"><span className="pk-label">Polymarket price (¢)</span>
+              <input className="pk-input" inputMode="decimal" value={price} placeholder="60" onChange={(e) => setPrice(e.target.value)} /></label>
           </div>
           {has ? (
             r.bet ? (
-              <div className="pk-lockrow">
-                <div><div className="k">Edge</div><div className="v pk-pos">+{r.edgePP.toFixed(2)} pp</div></div>
-                <div><div className="k">Kelly stake</div><div className="v">{money(r.cost)}</div></div>
-                <div><div className="k">Shares @ {c}¢</div><div className="v">{ints(r.shares)}</div></div>
+              <div className="pk-out">
+                <div><div className="k">Edge</div><div className="v pk-pos">+{r.edgePP.toFixed(2)}pp</div></div>
+                <div><div className="k">Stake</div><div className="v">{money(r.cost)}</div></div>
+                <div><div className="k">Shares</div><div className="v">{ints(r.shares)}</div></div>
                 <div><div className="k">EV / bet</div><div className="v pk-pos">+{(ev * 100).toFixed(1)}%</div></div>
-                <div><div className="k">Odds</div><div className="v">{decOdds.toFixed(2)}</div></div>
+                <div><div className="k">Dec. odds</div><div className="v">{decOdds.toFixed(2)}</div></div>
               </div>
             ) : (
-              <div className="pk-lockrow">
-                <div><div className="k">Edge</div><div className="v pk-neg">{r.edgePP.toFixed(2)} pp</div></div>
-                <div><div className="k">Verdict</div><div className="v" style={{ color: "var(--neg)" }}>No bet — price is at/above your probability</div></div>
-              </div>
+              <div className="pk-msg info">No bet — {c}¢ is at or above your {p}%. Edge {r.edgePP.toFixed(2)}pp.</div>
             )
-          ) : (
-            <div className="pk-status">Enter your win probability and the Polymarket price (both 0–100).</div>
-          )}
-          <p className="pk-foot" style={{ marginTop: 10 }}>
-            The price is the odds: a share at <code>c¢</code> = <code>c%</code> implied. Kelly = <code>(p − price)/(1 − price)</code>, sized with the
-            {" "}<b>{money(bankroll)}</b> bankroll and <b>{mult.toFixed(2)}x</b> Kelly from the top controls.
-          </p>
+          ) : null}
+          <p className="pk-note">A share at <code>c¢</code> = <code>c%</code> implied. Sized on <b style={{ color: "var(--text)" }}>{money(bankroll)}</b> at <b style={{ color: "var(--text)" }}>{mult.toFixed(2)}×</b> Kelly.</p>
         </div>
       )}
     </div>
@@ -791,58 +881,49 @@ function KellyCalc({ bankroll, mult }) {
 }
 
 function Hedge({ oppAskCents }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [shares, setShares] = useState(7427);
-  const [entry, setEntry] = useState(13);      // ¢ you paid for the held side
-  const [hedge, setHedge] = useState("");       // ¢ to buy the opposite side
+  const [entry, setEntry] = useState(13);
+  const [hedge, setHedge] = useState("");
 
   const hCents = toNum(hedge);
   const hasHedge = isFinite(hCents) && hCents > 0 && hCents < 100;
   const nA = toNum(shares) || 0;
   const eA = (toNum(entry) || 0) / 100;
   const cB = hCents / 100;
-
   const costA = nA * eA;
-  const costB = nA * cB;               // buy same share count on the other side to fully lock
-  const locked = nA * (1 - cB) - costA; // identical P/L whichever side wins
+  const costB = nA * cB;
+  const locked = nA * (1 - cB) - costA;
 
   useEffect(() => {
     if (isFinite(oppAskCents) && hedge === "") setHedge(String(oppAskCents));
   }, [oppAskCents]); // eslint-disable-line
 
   return (
-    <div className="pk-hedge">
-      <div className="pk-hedgehdr" onClick={() => setOpen(!open)}>
-        <h3>Hedge Calculator</h3>
-        <span style={{ color: "var(--muted)" }}>{open ? "▲" : "▼"}</span>
+    <div className="pk-card">
+      <div className="pk-toolhdr" onClick={() => setOpen(!open)}>
+        <div><h3>Hedge calculator</h3><p>Lock P/L by buying the other side</p></div>
+        <Chevron open={open} />
       </div>
       {open && (
-        <div className="pk-hedgebody">
-          <div className="pk-hgrid">
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span className="pk-label">Shares held</span>
-              <input className="pk-input" style={{ width: 120 }} value={shares} onChange={(e) => setShares(e.target.value)} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span className="pk-label">Entry price (¢)</span>
-              <input className="pk-input" style={{ width: 100 }} value={entry} onChange={(e) => setEntry(e.target.value)} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span className="pk-label">Hedge price (¢)</span>
-              <input className="pk-input" style={{ width: 100 }} value={hedge} placeholder="opp. ask" onChange={(e) => setHedge(e.target.value)} />
-            </div>
+        <div className="pk-toolbody">
+          <div className="pk-fields">
+            <label className="pk-field"><span className="pk-label">Shares held</span>
+              <input className="pk-input" inputMode="decimal" value={shares} onChange={(e) => setShares(e.target.value)} /></label>
+            <label className="pk-field"><span className="pk-label">Entry (¢)</span>
+              <input className="pk-input" inputMode="decimal" value={entry} onChange={(e) => setEntry(e.target.value)} /></label>
+            <label className="pk-field"><span className="pk-label">Hedge price (¢)</span>
+              <input className="pk-input" inputMode="decimal" value={hedge} placeholder="opp. ask" onChange={(e) => setHedge(e.target.value)} /></label>
           </div>
           {hasHedge ? (
-            <div className="pk-lockrow">
-              <div><div className="k">Buy on other side</div><div className="v">{ints(nA)} sh</div></div>
+            <div className="pk-out">
+              <div><div className="k">Buy other side</div><div className="v">{ints(nA)}</div></div>
               <div><div className="k">Hedge cost</div><div className="v">{money(costB)}</div></div>
-              <div><div className="k">Locked P/L (either outcome)</div>
-                <div className="v" style={{ color: locked >= 0 ? "var(--pos)" : "var(--warn)" }}>
-                  {(locked >= 0 ? "+" : "") + money(locked)}
-                </div></div>
+              <div><div className="k">Locked P/L</div>
+                <div className="v" style={{ color: locked >= 0 ? "var(--pos)" : "var(--warn)" }}>{(locked >= 0 ? "+" : "−") + money(Math.abs(locked))}</div></div>
             </div>
           ) : (
-            <div className="pk-status">Enter the opposite side's price to see the locked profit.</div>
+            <p className="pk-note">Enter the opposite side's price to see the locked P/L.</p>
           )}
         </div>
       )}
@@ -869,12 +950,11 @@ export default function PolyKellyLive() {
   const timer = useRef(null);
 
   const apply = (r, fallback) => {
-    if (r.ok && r.market) { setMarket(r.market); setLive(true); }
+    if (r.ok && r.market) { setMarket(r.market); setBooks({}); setLive(true); }
     else if (r.ok && r.choices) { setChoices(r.choices); }
     else { setErr(r.error || fallback); }
   };
 
-  // resolve market from the pasted link
   const doLoad = async () => {
     setErr(""); setChoices(null); setBusy(true);
     const r = await loadMarket(mktInput, parsed.outcomes[0] && parsed.outcomes[0].name, parsed.outcomes[1] && parsed.outcomes[1].name, parsed.map);
@@ -882,7 +962,6 @@ export default function PolyKellyLive() {
     apply(r, "Could not load market.");
   };
 
-  // find the market automatically from the two team names
   const doFind = async () => {
     setErr(""); setChoices(null); setBusy(true);
     const a = parsed.outcomes[0] && parsed.outcomes[0].name;
@@ -892,19 +971,15 @@ export default function PolyKellyLive() {
     apply(r, "Auto-search failed.");
   };
 
-  // poll the order books
   const refresh = useCallback(async () => {
     if (!market) return;
+    const got = await Promise.all(market.legs.map((leg) => fetchBook(leg.tokenId)));
     const next = {};
-    for (let i = 0; i < market.legs.length; i++) {
-      const leg = market.legs[i];
-      const b = await fetchBook(leg.tokenId);
-      if (b) next[leg.tokenId] = b;
-    }
+    got.forEach((b, i) => { if (b) next[market.legs[i].tokenId] = b; });
     if (Object.keys(next).length) {
       setBooks(next); setUpdatedAt(Date.now()); setErr("");
     } else {
-      setErr("No live order book for this market — it may be resolved/finished, or (in the preview only) blocked by CORS. On Vercel a live match will load.");
+      setErr("No live order book for this market — it may be resolved/finished.");
     }
   }, [market]);
 
@@ -924,14 +999,13 @@ export default function PolyKellyLive() {
   const bookFor = (name) => {
     if (!market) return null;
     let leg = legFor(name);
-    if (!leg) { // fall back to index alignment if names don't match
+    if (!leg) {
       const idx = parsed.outcomes.findIndex((o) => o.name === name);
       leg = market.legs[idx];
     }
     return leg ? books[leg.tokenId] : null;
   };
 
-  // best play across every book level
   const best = useMemo(() => {
     let top = null;
     for (let i = 0; i < parsed.outcomes.length; i++) {
@@ -940,15 +1014,12 @@ export default function PolyKellyLive() {
       const all = [...levels(b && b.asks, "ask", 2), ...levels(b && b.bids, "bid", 3)];
       for (let j = 0; j < all.length; j++) {
         const c = levelCalc(all[j].price, o.prob, bankroll, mult);
-        if (c.bet && (!top || c.cost > top.cost)) {
-          top = { name: o.name, price: all[j].price, cost: c.cost, color: o.color };
-        }
+        if (c.bet && (!top || c.cost > top.cost)) top = { name: o.name, price: all[j].price, cost: c.cost, color: o.color };
       }
     }
     return top;
   }, [parsed, books, bankroll, mult, market]);
 
-  // opposite side's best ask, to prefill the hedge
   const oppAsk = useMemo(() => {
     if (!best || parsed.outcomes.length < 2) return NaN;
     const other = parsed.outcomes.find((o) => o.name !== best.name);
@@ -958,84 +1029,115 @@ export default function PolyKellyLive() {
   }, [best, books, parsed, market]);
 
   const secsAgo = updatedAt ? Math.round((now - updatedAt) / 1000) : null;
+  const A = parsed.outcomes[0], B = parsed.outcomes[1];
+  const presets = [["¼", 0.25], ["½", 0.5], ["¾", 0.75], ["Full", 1]];
 
   return (
     <div className="pk">
       <style>{CSS}</style>
-      <div className="pk-wrap">
-        <p className="pk-eyebrow">Polymarket · Kelly · live book</p>
-        <h1 className="pk-title">Order-book edge finder</h1>
 
-        <textarea className="pk-ta" value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} />
+      <nav className="pk-nav">
+        <div className="pk-navin">
+          <div className="pk-logo"><Logo />Kelly Edge</div>
+          <span className="pk-navsep">/</span>
+          <span className="pk-navsub">Polymarket order-book edge finder</span>
+          <div className="pk-navright">
+            {market && (
+              <span className="pk-live"><span className={"pk-dot" + (live ? " on" : "")} />
+                {live ? (secsAgo == null ? "Connecting" : "Live · " + secsAgo + "s") : "Paused"}</span>
+            )}
+            {market && (live
+              ? <button className="pk-btn sm warn" onClick={() => setLive(false)}>Pause</button>
+              : <button className="pk-btn sm" onClick={() => setLive(true)}>Resume</button>)}
+          </div>
+        </div>
+      </nav>
 
-        <div className="pk-row">
-          <button className="pk-btn primary" onClick={doFind} disabled={busy || parsed.outcomes.length < 2}>
-            {busy ? "Searching…" : "Find match automatically"}
-          </button>
-          {market && (live
-            ? <button className="pk-btn stop" onClick={() => setLive(false)}>Stop</button>
-            : <button className="pk-btn" onClick={() => setLive(true)}>Resume</button>)}
-          {market && <span className="pk-status">{secsAgo == null ? "…" : secsAgo + "s ago"}</span>}
+      <main className="pk-main">
+        <div className="pk-top">
+          <section className="pk-card pk-cardpad" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <p className="pk-cardtitle" style={{ margin: 0 }}>Model output</p>
+            <textarea className="pk-ta" value={text} onChange={(e) => setText(e.target.value)} spellCheck={false}
+              placeholder="Paste the model output block here" />
+            <div className="pk-row">
+              <button className="pk-btn primary" onClick={doFind} disabled={busy || parsed.outcomes.length < 2}>
+                {busy ? "Searching…" : "Find match"}
+              </button>
+              <input className="pk-input" style={{ flex: 1, minWidth: 220 }} placeholder="or paste a Polymarket URL"
+                value={mktInput} onChange={(e) => setMktInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && mktInput.trim()) doLoad(); }} />
+              <button className="pk-btn" onClick={doLoad} disabled={busy || !mktInput.trim()}>Load</button>
+            </div>
+          </section>
+
+          <section className="pk-card pk-cardpad pk-setgrid">
+            <label className="pk-field"><span className="pk-label">Bankroll</span>
+              <div className="pk-prefix"><span>$</span>
+                <input className="pk-input" inputMode="decimal" value={bankroll} onChange={(e) => setBankroll(toNum(e.target.value) || 0)} />
+              </div>
+            </label>
+            <div className="pk-field">
+              <div className="pk-kellyval"><span className="pk-label">Kelly fraction</span><b>{mult.toFixed(2)}×</b></div>
+              <div className="pk-seg">
+                {presets.map(([l, v]) => (
+                  <button key={l} className={Math.abs(mult - v) < 1e-9 ? "on" : ""} onClick={() => setMult(v)}>{l}</button>
+                ))}
+              </div>
+              <input className="pk-slider" type="range" min="0.05" max="1" step="0.05" value={mult}
+                onChange={(e) => setMult(parseFloat(e.target.value))} />
+            </div>
+          </section>
         </div>
 
-        <div className="pk-row">
-          <span className="pk-label" style={{ whiteSpace: "nowrap" }}>or paste URL</span>
-          <input className="pk-input" style={{ flex: 1, minWidth: 200 }} placeholder="https://polymarket.com/market/..."
-            value={mktInput} onChange={(e) => setMktInput(e.target.value)} />
-          <button className="pk-btn ghost" onClick={doLoad} disabled={busy}>Load</button>
-        </div>
-
-        <div className="pk-row">
-          <span className="pk-label">Bankroll $</span>
-          <input className="pk-input" style={{ width: 130 }} value={bankroll} onChange={(e) => setBankroll(toNum(e.target.value) || 0)} />
-          <span className="pk-label">Kelly {mult.toFixed(2)}x{mult === 1 ? " (full)" : mult === 0.5 ? " (half)" : mult === 0.25 ? " (quarter)" : ""}</span>
-          <input className="pk-slider" type="range" min="0.05" max="1" step="0.05" value={mult}
-            onChange={(e) => setMult(parseFloat(e.target.value))} />
-        </div>
-
-        {err && <div className="pk-err">{err}</div>}
+        {err && <div className="pk-msg err">{err}</div>}
 
         {choices && (
-          <div className="pk-err" style={{ color: "var(--muted)" }}>
+          <div className="pk-msg info">
             Multiple markets in that event — pick one:
-            <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
               {choices.map((c, i) => (
-                <button key={i} className="pk-btn ghost" onClick={() => { setMarket(c); setChoices(null); setLive(true); }}>
-                  {c.question}
-                </button>
+                <button key={i} className="pk-btn sm" onClick={() => { setMarket(c); setBooks({}); setChoices(null); setLive(true); }}>{c.question}</button>
               ))}
             </div>
           </div>
         )}
 
-        {parsed.outcomes.length >= 2 && (
+        {A && B ? (
           <>
-            <div className="pk-matchbar">
-              {parsed.outcomes[0].name} <span className="mut">vs</span> {parsed.outcomes[1].name}
-            </div>
-
-            <div className="pk-mapcard">
-              <div className="pk-maphdr">
-                <span className="pk-mappill">{parsed.map ? parsed.map.toUpperCase() : "MARKET"}</span>
+            <section className="pk-card pk-match">
+              <div className="pk-matchtop">
+                <span className="pk-badge">{parsed.map ? parsed.map.toUpperCase() : "MATCH"}</span>
                 {market && market.url
                   ? <a className="pk-qlink" href={market.url} target="_blank" rel="noreferrer">{market.question} ↗</a>
-                  : <span className="pk-qlink">load a market to pull live prices</span>}
+                  : <span className="pk-qlink">No market loaded</span>}
               </div>
-              <div className="pk-sides">
-                <Side o={parsed.outcomes[0]} book={bookFor(parsed.outcomes[0].name)} bankroll={bankroll} mult={mult} />
-                <Side o={parsed.outcomes[1]} book={bookFor(parsed.outcomes[1].name)} bankroll={bankroll} mult={mult} />
+              <div className="pk-teams">
+                <div className="pk-team"><div className="n" style={{ color: accentFor(A.color) }}>{A.name}</div><div className="p">{A.prob.toFixed(2)}%</div></div>
+                <div className="pk-vs">vs</div>
+                <div className="pk-team r"><div className="n" style={{ color: accentFor(B.color) }}>{B.name}</div><div className="p">{B.prob.toFixed(2)}%</div></div>
               </div>
+              <div className="pk-bar">
+                <i style={{ width: A.prob + "%", background: accentFor(A.color) }} />
+                <i style={{ width: B.prob + "%", background: accentFor(B.color) }} />
+              </div>
+            </section>
+
+            <div className="pk-sides">
+              <Side o={A} book={bookFor(A.name)} bankroll={bankroll} mult={mult} loaded={!!market} />
+              <Side o={B} book={bookFor(B.name)} bankroll={bankroll} mult={mult} loaded={!!market} />
             </div>
 
-            <KellyCalc bankroll={bankroll} mult={mult} />
-            <Hedge oppAskCents={oppAsk} />
+            <div className="pk-tools">
+              <KellyCalc bankroll={bankroll} mult={mult} />
+              <Hedge oppAskCents={oppAsk} />
+            </div>
           </>
+        ) : (
+          <div className="pk-msg info">Couldn't read two teams. Each line should look like <span className="mono">Team: Win probability 38.5%</span>.</div>
         )}
 
-        <p className="pk-foot">
-          Kelly <code>(p − price)/(1 − price)</code> × multiplier · shares = cost ÷ price · ASK = buy now, BID = limit lower. No fees/slippage modeled.
-        </p>
-      </div>
+        <p className="pk-foot">Kelly (p − price) / (1 − price) × fraction · ASK = buy now · BID = limit below market · fees & slippage not modeled</p>
+      </main>
     </div>
   );
 }
