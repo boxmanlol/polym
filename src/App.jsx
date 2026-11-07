@@ -628,7 +628,7 @@ html,body{ margin:0; background:#000; }
 @keyframes pkp{ 50%{ opacity:.45; } }
 @media (prefers-reduced-motion: reduce){ .pk-dot.on{ animation:none; } }
 
-.pk-main{ max-width:1360px; margin:0 auto; padding:32px; display:flex; flex-direction:column; gap:20px; }
+.pk-main{ max-width:1360px; margin:0 auto; padding:24px 32px 32px; display:flex; flex-direction:column; gap:16px; }
 
 /* cards */
 .pk-card{ background:var(--s1); border:1px solid var(--line); border-radius:14px; }
@@ -677,24 +677,20 @@ html,body{ margin:0; background:#000; }
 .pk-msg.err{ color:var(--warn); border-color:#3d3117; background:rgba(245,166,35,.06); }
 .pk-msg.info{ color:var(--muted); border-color:var(--line2); background:var(--s1); }
 
-/* match header */
-.pk-match{ padding:24px; display:flex; flex-direction:column; gap:18px; }
-.pk-matchtop{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+/* match strip (compact) */
+.pk-match{ display:flex; align-items:center; gap:14px; padding:12px 18px; flex-wrap:wrap; }
 .pk-badge{ font-family:'Geist Mono',monospace; font-size:12px; font-weight:500; letter-spacing:.06em; color:var(--text);
-  border:1px solid var(--line2); background:var(--s2); border-radius:6px; padding:4px 10px; }
-.pk-qlink{ color:var(--muted); font-size:13.5px; text-decoration:none; transition:color .15s; }
-.pk-qlink:hover{ color:var(--text); }
-.pk-teams{ display:grid; grid-template-columns:1fr auto 1fr; align-items:end; gap:16px; }
-.pk-team .n{ font-size:26px; font-weight:600; letter-spacing:-.025em; line-height:1.15; }
-.pk-team .p{ font-family:'Geist Mono',monospace; font-size:14px; color:var(--muted); margin-top:4px; }
-.pk-team.r{ text-align:right; }
-.pk-vs{ color:var(--dim); font-size:14px; font-weight:500; padding-bottom:22px; }
-.pk-bar{ display:flex; height:6px; border-radius:999px; overflow:hidden; background:var(--s3); gap:2px; }
+  border:1px solid var(--line2); background:var(--s2); border-radius:6px; padding:3px 9px; }
+.pk-mt{ font-size:15px; font-weight:600; letter-spacing:-.01em; white-space:nowrap; }
+.pk-mt em{ font-style:normal; font-family:'Geist Mono',monospace; font-size:13px; font-weight:500; color:var(--muted); }
+.pk-bar{ flex:1; min-width:80px; display:flex; height:4px; border-radius:999px; overflow:hidden; background:var(--s3); gap:2px; }
 .pk-bar i{ display:block; height:100%; transition:width .4s ease; }
+.pk-qlink{ color:var(--muted); font-size:13px; text-decoration:none; transition:color .15s; margin-left:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:42%; }
+.pk-qlink:hover{ color:var(--text); }
 
 /* sides */
 .pk-sides{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-.pk-side{ padding:22px; display:flex; flex-direction:column; gap:16px; }
+.pk-side{ padding:18px; display:flex; flex-direction:column; gap:12px; }
 .pk-sidehdr{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .pk-sidename{ display:flex; align-items:center; gap:10px; font-size:18px; font-weight:600; letter-spacing:-.015em; }
 .pk-sidename i{ width:10px; height:10px; border-radius:3px; }
@@ -703,9 +699,9 @@ html,body{ margin:0; background:#000; }
 .pk-pill.neu{ color:var(--muted); background:var(--s2); box-shadow:0 0 0 1px var(--line2) inset; }
 
 .pk-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
-.pk-stat{ background:var(--s1); padding:12px 14px; }
+.pk-stat{ background:var(--s1); padding:8px 12px; }
 .pk-stat .k{ font-size:12px; color:var(--muted); }
-.pk-stat .v{ font-family:'Geist Mono',monospace; font-size:17px; font-weight:600; margin-top:2px; letter-spacing:-.01em; }
+.pk-stat .v{ font-family:'Geist Mono',monospace; font-size:15px; font-weight:600; margin-top:2px; letter-spacing:-.01em; }
 
 .pk-book{ border:1px solid var(--line); border-radius:10px; overflow:hidden; }
 .pk-booktag{ display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--s2); border-bottom:1px solid var(--line); font-size:13px; }
@@ -714,7 +710,7 @@ html,body{ margin:0; background:#000; }
 table.pk-tbl{ width:100%; border-collapse:collapse; font-family:'Geist Mono',monospace; }
 .pk-tbl th{ font-family:'Geist',sans-serif; font-size:12px; color:var(--muted); font-weight:500; text-align:right; padding:9px 14px; border-bottom:1px solid var(--line); }
 .pk-tbl th:first-child, .pk-tbl td:first-child{ text-align:left; }
-.pk-tbl td{ font-size:14px; text-align:right; padding:11px 14px; border-bottom:1px solid var(--line); }
+.pk-tbl td{ font-size:15px; text-align:right; padding:11px 14px; border-bottom:1px solid var(--line); }
 .pk-tbl tr:last-child td{ border-bottom:0; }
 .pk-tbl tbody tr{ transition:background .12s; }
 .pk-tbl tbody tr:hover{ background:var(--s2); }
@@ -753,7 +749,7 @@ table.pk-tbl{ width:100%; border-collapse:collapse; font-family:'Geist Mono',mon
 }
 @media (max-width:640px){
   .pk-main{ padding:16px; gap:16px; } .pk-navin{ padding:12px 16px; } .pk-navsub, .pk-navsep{ display:none; }
-  .pk-team .n{ font-size:20px; } .pk-tbl td, .pk-tbl th{ padding-left:10px; padding-right:10px; }
+  .pk-qlink{ max-width:100%; margin-left:0; flex-basis:100%; } .pk-tbl td, .pk-tbl th{ padding-left:10px; padding-right:10px; }
 }
 `;
 
@@ -1105,21 +1101,16 @@ export default function PolyKellyLive() {
         {A && B ? (
           <>
             <section className="pk-card pk-match">
-              <div className="pk-matchtop">
-                <span className="pk-badge">{parsed.map ? parsed.map.toUpperCase() : "MATCH"}</span>
-                {market && market.url
-                  ? <a className="pk-qlink" href={market.url} target="_blank" rel="noreferrer">{market.question} ↗</a>
-                  : <span className="pk-qlink">No market loaded</span>}
-              </div>
-              <div className="pk-teams">
-                <div className="pk-team"><div className="n" style={{ color: accentFor(A.color) }}>{A.name}</div><div className="p">{A.prob.toFixed(2)}%</div></div>
-                <div className="pk-vs">vs</div>
-                <div className="pk-team r"><div className="n" style={{ color: accentFor(B.color) }}>{B.name}</div><div className="p">{B.prob.toFixed(2)}%</div></div>
-              </div>
+              <span className="pk-badge">{parsed.map ? parsed.map.toUpperCase() : "MATCH"}</span>
+              <span className="pk-mt" style={{ color: accentFor(A.color) }}>{A.name} <em>{A.prob.toFixed(1)}%</em></span>
               <div className="pk-bar">
                 <i style={{ width: A.prob + "%", background: accentFor(A.color) }} />
                 <i style={{ width: B.prob + "%", background: accentFor(B.color) }} />
               </div>
+              <span className="pk-mt" style={{ color: accentFor(B.color) }}><em>{B.prob.toFixed(1)}%</em> {B.name}</span>
+              {market && market.url
+                ? <a className="pk-qlink" href={market.url} target="_blank" rel="noreferrer">{market.question} ↗</a>
+                : <span className="pk-qlink">No market loaded</span>}
             </section>
 
             <div className="pk-sides">
